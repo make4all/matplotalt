@@ -1,5 +1,6 @@
 import io
 import re
+import sys
 import base64
 import warnings
 import numpy as np
@@ -19,6 +20,8 @@ chart_type_cls_processor = None
 
 # Thanks to Gustavo at https://stackoverflow.com/questions/15411967
 def is_notebook():
+    if 'google.colab' in sys.modules:
+        return True       # Running in google colab
     try:
         shell = get_ipython().__class__.__name__
         if shell == 'ZMQInteractiveShell':
