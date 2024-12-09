@@ -459,12 +459,12 @@ def get_desc_level_prompt(desc_level, starter_desc=None, max_tokens=225, include
     elif desc_level == 3:
         info_prompt = f"Include information about the chart type, {colors_prompt} title, axis ranges, and labels. If possible, describe statistics, extrema, outliers, correlations, point-wise comparisons, and trends for each plotted variable."
     elif desc_level == 4:
-        info_prompt = f"Include information about the chart type, {colors_prompt}title, axis ranges, and labels. If possible, Describe statistics, extrema, outliers, correlations, point-wise comparisons, and trends for each plotted variable. If possible, briefly explain domain-specific insights, current events, and socio-political context that explain the data."
+        info_prompt = f"Include information about the chart type, {colors_prompt}title, axis ranges, and labels. If possible, describe statistics, extrema, outliers, correlations, point-wise comparisons, and trends for each plotted variable. If possible, briefly explain domain-specific insights, current events, and socio-political context that explain the data."
     else:
         raise ValueError(f"Unsupported desc_level: {desc_level}")
     # Combine the prompt parts
     full_prompt = f"{base_prompt} {data_prompt.strip()} {info_prompt.strip()}"
-    full_prompt += f"Be concise and limit you response to {max_tokens} tokens."
+    full_prompt += f"Be concise and limit your response to {max_tokens} tokens."
     return full_prompt
 
 
