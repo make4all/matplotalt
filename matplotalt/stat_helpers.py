@@ -6,17 +6,23 @@ from matplotalt_helpers import format_float, idx_pt_desc
 
 
 def _max_sf(chart_dict, var_name, ax_name, sig_figs, **kwargs):
-    var_ax_data = chart_dict["var_info"][var_name]["data"][ax_name]
+    var_data = chart_dict["var_info"][var_name]["data"]
+    var_ax_data = var_data[ax_name]
     max_idx = np.nanargmax(var_ax_data)
-    max_pt_desc = idx_pt_desc(max_idx, chart_dict, var_name, ax_name, sig_figs=sig_figs)
-    max_pt_desc = f" at {max_pt_desc}" if max_pt_desc != "" else ""
+    max_pt_desc = ""
+    if len(var_data) > 1:
+        max_pt_desc = idx_pt_desc(max_idx, chart_dict, var_name, ax_name, sig_figs=sig_figs)
+        max_pt_desc = f" at {max_pt_desc}" if max_pt_desc != "" else ""
     return f"a maximum value of {ax_name}={format_float(var_ax_data[max_idx], sig_figs)}{max_pt_desc}"
 
 def _min_sf(chart_dict, var_name, ax_name, sig_figs, **kwargs):
-    var_ax_data = chart_dict["var_info"][var_name]["data"][ax_name]
+    var_data = chart_dict["var_info"][var_name]["data"]
+    var_ax_data = var_data[ax_name]
     min_idx = np.nanargmin(var_ax_data)
-    min_pt_desc = idx_pt_desc(min_idx, chart_dict, var_name, ax_name, sig_figs=sig_figs)
-    min_pt_desc = f" at {min_pt_desc}" if min_pt_desc != "" else ""
+    min_pt_desc = ""
+    if len(var_data) > 1:
+        min_pt_desc = idx_pt_desc(min_idx, chart_dict, var_name, ax_name, sig_figs=sig_figs)
+        min_pt_desc = f" at {min_pt_desc}" if min_pt_desc != "" else ""
     return f"a minimum value of {ax_name}={format_float(var_ax_data[min_idx], sig_figs)}{min_pt_desc}"
 
 
