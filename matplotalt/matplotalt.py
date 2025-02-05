@@ -1,7 +1,6 @@
 import os
 import re
 import secrets
-import pyexiv2
 import warnings
 import numpy as np
 from PIL import Image
@@ -171,15 +170,9 @@ def add_alt_text(alt_text, methods=["html"], output_file=None):
         fig.canvas.draw()
         pil_img = Image.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
         if "img_file" in methods:
-            pil_img.save(output_file + ".jpg", 'JPEG')
-            with open(output_file + ".jpg", 'rb+') as img_output_f:
-                with pyexiv2.ImageData(img_output_f.read()) as pyexif_img:
-                    pyexif_img.modify_exif({"Exif.Image.ImageDescription": alt_text})
-                    # Empty the original file
-                    img_output_f.seek(0)
-                    img_output_f.truncate()
-                    # Get the bytes data of the image and save it to the file
-                    img_output_f.write(pyexif_img.get_bytes())
+            exif = pil_img.getexif()
+            exif[270] = alt_text
+            pil_img.save(output_file + ".jpg", 'JPEG', exif=exif)
         # Display in HTML with the given alt text using a dataURL
         if is_env_notebook and "html" in methods:
             data_url = "data:image/png;base64," + pillow_image_to_base64_string(pil_img)

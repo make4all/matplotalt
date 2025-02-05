@@ -5,6 +5,5 @@ nbformat
 numpy
 openai
 Pillow
-pyexiv2
 python_dateutil
 scipy

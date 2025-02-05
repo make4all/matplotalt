@@ -327,6 +327,6 @@ def idx_pt_desc(idxs, chart_dict, var_name, excluded_axis, sig_figs=4):
                     idx_val = var_data[ax_names[0]][idx]
                 if not is_number(idx_val):
                     idxs_desc_arr.append(f"({idx_val})")
-        print(idxs_desc_arr)
+        #print(idxs_desc_arr)
         return format_list(idxs_desc_arr)
     return ""
