@@ -4,6 +4,7 @@ import sys
 import base64
 import warnings
 import numpy as np
+from copy import deepcopy
 from PIL import Image
 import dateutil.parser
 from scipy import stats
@@ -105,9 +106,9 @@ def hex_to_rgb(h):
 
 # From https://stackoverflow.com/questions/60676893
 def pillow_image_to_base64_string(img):
-    """Convert PIL jpeg to base64 string"""
+    """Convert PIL png to base64 string"""
     buffered = io.BytesIO()
-    img.save(buffered, format="JPEG")
+    img.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
@@ -117,7 +118,11 @@ def get_color_name(color_input):
     if isinstance(color_input, str):
         if "#" in color_input:
             color_input = color_input[1:]
-        rgb_triplet = hex_to_rgb(color_input)
+        # check that string is at least hex length (optionally with alpha)
+        if len(color_input) == 6 or len(color_input) == 8:
+            rgb_triplet = hex_to_rgb(color_input)
+        else:
+            return color_input # otherwise assume we're just given the string name itself
     elif isinstance(color_input, (tuple, list, np.ndarray)):
         rgb_triplet = color_input
     else:
@@ -157,6 +162,9 @@ def format_float(f, sig_figs=4, tol=1e-10):
     """returns the float as a string with the given number of signifigant figures"""
     if isinstance(f, str):
         f = f.replace("−", "-")
+        mathdef_matches = re.findall(r'\$\\mathdefault{(.+)}\$', f)
+        if len(mathdef_matches) == 1:
+            f = mathdef_matches[0]
         try:
             f = float(f)
         except ValueError:
@@ -330,3 +338,14 @@ def idx_pt_desc(idxs, chart_dict, var_name, excluded_axis, sig_figs=4):
         #print(idxs_desc_arr)
         return format_list(idxs_desc_arr)
     return ""
+
+
+import matplotlib as mpl
+
+def gcf_as_pil_img():
+    #pil_img = Image.frombytes('RGB', cur_fig.canvas.get_width_height(), cur_fig.canvas.tostring_rgb())
+    buf = io.BytesIO()
+    plt.gcf().savefig(buf)
+    buf.seek(0)
+    img = Image.open(buf)
+    return img

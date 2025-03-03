@@ -15,8 +15,8 @@ from api_helpers import *
 
 
 CHART_TYPE_TO_CLASS = {
-    "line":    LineDescription,
     "bar":     BarDescription,
+    "line":    LineDescription,
     "scatter": ScatterDescription,
     "image":   ImageDescription,
     "heatmap": HeatmapDescription,
@@ -98,9 +98,10 @@ def get_cur_chart_desc_class(ax=None, chart_type=None, include_warnings=False,
             raise ValueError("Unable to infer chart type, please pass a chart_type parameter to generate_alt_text")
     return CHART_TYPE_TO_CLASS[chart_type](ax)
 
-
+# TODO: convert methods to enum
 # TODO: Add markdown heading that says the output is alt text (take optional heading level parameter)
 #       'Alt text for {chart title}'
+# TODO: throw error for invalid methods
 def add_alt_text(alt_text, methods=["html"], output_file=None):
     """
     Surfaces given alt text in a Jupyter notebook using the given methods.
@@ -121,17 +122,16 @@ def add_alt_text(alt_text, methods=["html"], output_file=None):
             NOTE: markdown data tables are excluded from all but the "markdown" and "new_cell" methods
             NOTE: "html", "markdown", and "new_cell" are only supported in notebooks
         output_file (str|None, optional):
-            The output file name to use for html and txt_file methods. If the file already exists,
+            The output file name to use for img_file and txt_file methods. If the file already exists,
             defaults to output_file plus a hash. If None is given, defaults to "mpa_" plus the
             title of the last matplotlib chart. If None is given and there's no title,
             defaults to "mpa_" plus a hash.
-
 
     Returns:
         None
     """
     if methods is None or len(methods) < 1:
-        return
+        raise ValueError("No methods provided to add_alt_text")
     elif isinstance(methods, str):
         methods = [methods]
     is_env_notebook = is_notebook()
@@ -153,7 +153,7 @@ def add_alt_text(alt_text, methods=["html"], output_file=None):
                 output_file = "matplotalt_tmp_" + secrets.token_urlsafe(16)
         else:
             output_file = os.path.abspath(output_file).split(".")[0]
-        if os.path.exists(output_file + ".txt") or os.path.exists(output_file + ".jpg"):
+        if os.path.exists(output_file + ".txt") or os.path.exists(output_file + ".png"):
             output_file += "_" + secrets.token_urlsafe(16)
     # Save alt text to the given output file
     if "txt_file" in methods:
@@ -166,13 +166,11 @@ def add_alt_text(alt_text, methods=["html"], output_file=None):
     alt_text = alt_text.replace("\n", "")
     # Methods that need to draw the figure
     if "html" in methods or "img_file" in methods:
-        fig = plt.gcf()
-        fig.canvas.draw()
-        pil_img = Image.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
+        pil_img = gcf_as_pil_img()
         if "img_file" in methods:
             exif = pil_img.getexif()
             exif[270] = alt_text
-            pil_img.save(output_file + ".jpg", 'JPEG', exif=exif)
+            pil_img.save(output_file + ".png", 'PNG', exif=exif)
         # Display in HTML with the given alt text using a dataURL
         if is_env_notebook and "html" in methods:
             data_url = "data:image/png;base64," + pillow_image_to_base64_string(pil_img)
@@ -186,10 +184,11 @@ def surface_alt_text(**kwargs):
     add_alt_text(**kwargs)
 
 
+# TODO: convert include_table to enum with "always", "never", and "auto". With "auto" by default. Tables included when supported without error message when not
 # TODO: Add option to output alt text as a latex command
 def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_type_classifier="auto",
                       max_subplots=9, include_warnings=False, include_table=False, max_table_rows=20,
-                      sig_figs=4, **kwargs):
+                      max_table_cols=20, sig_figs=4, **kwargs):
     """
     Args:
         axs (matplotlib.axis.Axis|List[matplotlib.axis.Axis], optional):
@@ -271,7 +270,7 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
             chart_desc_class = get_cur_chart_desc_class(ax=ax, chart_type=chart_type, chart_type_classifier=chart_type_classifier, include_warnings=include_warnings)
             alt_text += chart_desc_class.get_chart_desc(desc_level=desc_level, sig_figs=sig_figs, **kwargs)
             if include_table:
-                alt_text += f" Data table:\n\n{chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, sig_figs=sig_figs)}"
+                alt_text += f"\nData table:\n\n{chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, max_cols=max_table_cols, sig_figs=sig_figs)}"
             if ax_idx < len(flattened_axs) - 1:
                 alt_text += "\n\n"
     # Create alt text for a single plot
@@ -280,19 +279,20 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
             if len(axs) == 1:
                 ax = axs[0]
             else:
-                #raise ValueError("Given axes are blank")
-                return "The figure is blank"
+                #raise ValueError("Given axes are blank.")
+                return "The figure is blank. Make sure you are not calling plt.show() before show_with_alt()"
         else:
             ax = axs
         chart_desc_class = get_cur_chart_desc_class(ax=ax, chart_type=chart_type, chart_type_classifier=chart_type_classifier, include_warnings=include_warnings)
         alt_text += chart_desc_class.get_chart_desc(desc_level=desc_level, sig_figs=sig_figs, **kwargs)
         if include_table:
-            alt_text += f" Data table:\n\n{chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, sig_figs=sig_figs)}"
+            alt_text += f"\nData table:\n\n{chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, max_cols=max_table_cols, sig_figs=sig_figs)}"
     alt_text = ". ".join([sent.capitalize() for sent in alt_text.split(". ")])
     return alt_text
 
 
 # Main function that should replace plt.show()
+# TODO: rewrite note below so behavior with plt.show is clearer
 # TODO: Add "block" param so people can pass that in if they had it in plt.show() before
 # TODO: Is there a way to alias plt.show to this function (e.g. plt.show() = show_with_alt())?
 def show_with_alt(alt_text=None, axs=None, fig=None, methods=["html"], chart_type=None,
@@ -466,7 +466,7 @@ def get_desc_level_prompt(desc_level, starter_desc=None, max_tokens=225, include
 # TODO: Add the role: 'You are a helpful assistant you describe figures. Only include statistics based on the given data'
 def generate_api_alt_text(api_key, prompt=None, fig=None, desc_level=4, chart_type=None,
                           model="gpt-4-vision-preview", use_azure=False,
-                          use_starter_alt_in_prompt=True, include_table=False, include_table_in_prompt=False,
+                          use_starter_alt_in_prompt=True, include_table=True, include_table_in_prompt=False,
                           max_tokens=225, include_colors=True, **kwargs):
     """
     Return AI generated alt text for the current figure and axes.
@@ -474,8 +474,8 @@ def generate_api_alt_text(api_key, prompt=None, fig=None, desc_level=4, chart_ty
     Args:
         api_key (str, optional):
             The API key to use when querying models. If None and use_azure is True, uses the
-            environment variable AZURE_OPENAI_API_KEY. Otherwise uses the variable OPENAI_API_KEY.
-            Defaults to None
+            environment variable AZURE_OPENAI_API_KEY. If None and use_azure is False uses the
+            variable OPENAI_API_KEY. Defaults to None
         prompt (str, optional):
             The prompt to use when querying the model to generate alt text. If None is given,
             a prompt is chosen based on the given description level.
@@ -505,7 +505,7 @@ def generate_api_alt_text(api_key, prompt=None, fig=None, desc_level=4, chart_ty
             Whether to use heuristic-generated alt text for the current figure in the prompt.
         include_table (bool, optional):
             Whether to include a markdown table with the chart's data in both starter and
-            VLM-generated alt texts. Defaults to False.
+            VLM-generated alt texts. Defaults to True.
         max_tokens (int, optional):
             The maximum number of tokens in the VLM-generated response. Defaults to 225.
 
