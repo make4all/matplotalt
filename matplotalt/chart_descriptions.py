@@ -173,9 +173,11 @@ class ChartDescription():
                     for var_dict in self.chart_dict["var_info"].values():
                         if "data" in var_dict and ax_name in var_dict["data"]:
                             vars_cur_ax_data.append(var_dict["data"][ax_name])
+                    if len(vars_cur_ax_data) < 1:
+                        return ""
                     data_len = len(vars_cur_ax_data[0])
                     if data_len > max_rows:
-                        return f"Max table rows exceeded. Max rows: {max_rows}, table rows: {data_len}"
+                        return f"Max data table rows exceeded. Max rows: {max_rows}, table rows: {data_len}"
                     # If all variables share the same data for an axis, just include it once
                     if all([len(vars_cur_ax_data[i]) == len(vars_cur_ax_data[j]) and \
                        np.allclose(vars_cur_ax_data[i], vars_cur_ax_data[j]) \
@@ -190,8 +192,8 @@ class ChartDescription():
                     data_len == len(self.chart_dict["ax_info"][ax_name]["ticklabels"]):
                         table_dict[f"{ax_label} ticklabels"] = self.chart_dict["ax_info"][ax_name]["ticklabels"]
                     if len(table_dict) > max_cols:
-                        return f"Max table columns exceeded. Max cols: {max_cols}, table cols: {len(table_dict)}"
-            return create_md_table(table_dict, sig_figs=sig_figs)
+                        return f"Max data table columns exceeded. Max cols: {max_cols}, table cols: {len(table_dict)}"
+            return "Data table:\n\n" + create_md_table(table_dict, sig_figs=sig_figs)
         return ""
 
 
@@ -835,7 +837,8 @@ class ContourDescription(ChartDescription):
 
 
     def get_data_as_md_table(self, **kwargs):
-        return f"Tables are currently unsupported for charts of type: {self.chart_type}"
+
+        return f"Tables are currently unsupported for charts of type: {self.chart_dict['chart_type']}"
 
 
     def get_encodings_desc(self, **kwargs):

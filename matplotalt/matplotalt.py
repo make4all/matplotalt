@@ -184,11 +184,10 @@ def surface_alt_text(**kwargs):
     add_alt_text(**kwargs)
 
 
-# TODO: convert include_table to enum with "always", "never", and "auto". With "auto" by default. Tables included when supported without error message when not
 # TODO: Add option to output alt text as a latex command
 def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_type_classifier="auto",
-                      max_subplots=9, include_warnings=False, include_table=False, max_table_rows=20,
-                      max_table_cols=20, sig_figs=4, **kwargs):
+                      max_subplots=9, include_warnings=False, include_table="auto", include_text=True,
+                      max_table_rows=20, max_table_cols=20, sig_figs=4, **kwargs):
     """
     Args:
         axs (matplotlib.axis.Axis|List[matplotlib.axis.Axis], optional):
@@ -222,9 +221,19 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
         max_subplots (int, optional):
             If there are more than max_subplots subplots, only the number of plots and suptitle
             will be included in alt text.
-        include_table (bool, optional):
+        include_table (str, optional):
             Whether to include a markdown table with the chart's data in the generated alt text.
-            Defaults to False.
+            Three options are currently supported:
+
+            - "always": always include data as a markdown table. Adds an error message if
+            the chart type is not supported or the max rows/columns is exceeded.
+            - "never": never include data as a markdown table.
+            - "auto": Include markdown table if chart type is supported and within max rows/cols.
+            Does not include a message if a table is not created.
+
+            Defaults to "auto".
+        include_text (bool, optional):
+            Whether to include the main text (e.g. if you only want the table). Defaults to True
         max_table_rows (int, optional):
             The maximum length markdown table to include in generated alt text. Defaults to 20.
         kwargs (optional):
@@ -268,9 +277,16 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
         for ax_idx, ax in enumerate(flattened_axs):
             alt_text += f" Subplot {ax_idx + 1}: "
             chart_desc_class = get_cur_chart_desc_class(ax=ax, chart_type=chart_type, chart_type_classifier=chart_type_classifier, include_warnings=include_warnings)
-            alt_text += chart_desc_class.get_chart_desc(desc_level=desc_level, sig_figs=sig_figs, **kwargs)
-            if include_table:
-                alt_text += f"\nData table:\n\n{chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, max_cols=max_table_cols, sig_figs=sig_figs)}"
+            if include_text:
+                alt_text += chart_desc_class.get_chart_desc(desc_level=desc_level, sig_figs=sig_figs, **kwargs)
+            if include_table == "auto" or include_table == "always":
+                table_desc = chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, max_cols=max_table_cols, sig_figs=sig_figs)
+                # if "always", always include table output even if it is an error message
+                # elif "auto", include table if it is possible to generate correctly
+                if include_table == "always" or \
+                   include_table == "auto" and table_desc.startswith("Data table:"):
+                    alt_text += "\n" + table_desc
+            # Add newlines for the next subplot
             if ax_idx < len(flattened_axs) - 1:
                 alt_text += "\n\n"
     # Create alt text for a single plot
@@ -285,9 +301,14 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
             ax = axs
         chart_desc_class = get_cur_chart_desc_class(ax=ax, chart_type=chart_type, chart_type_classifier=chart_type_classifier, include_warnings=include_warnings)
         alt_text += chart_desc_class.get_chart_desc(desc_level=desc_level, sig_figs=sig_figs, **kwargs)
-        if include_table:
-            alt_text += f"\nData table:\n\n{chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, max_cols=max_table_cols, sig_figs=sig_figs)}"
-    alt_text = ". ".join([sent.capitalize() for sent in alt_text.split(". ")])
+        if include_table == "auto" or include_table == "always":
+            table_desc = chart_desc_class.get_data_as_md_table(max_rows=max_table_rows, max_cols=max_table_cols, sig_figs=sig_figs)
+            # if "always", always include table output even if it is an error message
+            # elif "auto", include table if it is possible to generate correctly
+            if include_table == "always" or \
+                include_table == "auto" and table_desc.startswith("Data table:"):
+                alt_text += "\n" + table_desc
+        alt_text = ". ".join([sent.capitalize() for sent in alt_text.split(". ")])
     return alt_text
 
 
@@ -351,7 +372,7 @@ def show_with_alt(alt_text=None, axs=None, fig=None, methods=["html"], chart_typ
         for each axis and their number. Otherwise returns None.
     """
     if "table" in methods or "md_table" in methods:
-        kwargs["include_table"] = True
+        kwargs["include_table"] = "always"
     if not alt_text:
         alt_text = generate_alt_text(axs=axs, fig=fig, chart_type=chart_type,
                                      desc_level=desc_level, **kwargs)
@@ -466,7 +487,7 @@ def get_desc_level_prompt(desc_level, starter_desc=None, max_tokens=225, include
 # TODO: Add the role: 'You are a helpful assistant you describe figures. Only include statistics based on the given data'
 def generate_api_alt_text(api_key, prompt=None, fig=None, desc_level=4, chart_type=None,
                           model="gpt-4-vision-preview", use_azure=False,
-                          use_starter_alt_in_prompt=True, include_table=True, include_table_in_prompt=False,
+                          use_starter_alt_in_prompt=True, include_table="auto", include_table_in_prompt="auto",
                           max_tokens=225, include_colors=True, **kwargs):
     """
     Return AI generated alt text for the current figure and axes.
@@ -503,9 +524,16 @@ def generate_api_alt_text(api_key, prompt=None, fig=None, desc_level=4, chart_ty
             Whether to use azure openai instead of openai. Defaults to False.
         use_starter_alt_in_prompt (bool, optional):
             Whether to use heuristic-generated alt text for the current figure in the prompt.
-        include_table (bool, optional):
-            Whether to include a markdown table with the chart's data in both starter and
-            VLM-generated alt texts. Defaults to True.
+        include_table / include_table_in_prompt (str, optional):
+            Whether to include a markdown table with the chart's data in the generated alt text (include_table),
+            and prompt to the model (include_table_in_prompt).
+            Three options are currently supported:
+
+            - "always": always include data as a markdown table. Adds an error message if
+            the chart type is not supported or the max rows/columns is exceeded.
+            - "never": never include data as a markdown table.
+            - "auto": Include markdown table if chart type is supported and within max rows/cols.
+            Does not include a message if a table is not created.
         max_tokens (int, optional):
             The maximum number of tokens in the VLM-generated response. Defaults to 225.
 
@@ -533,35 +561,23 @@ def generate_api_alt_text(api_key, prompt=None, fig=None, desc_level=4, chart_ty
     base64_img = pillow_image_to_base64_string(pil_img)
     # Optionally include starter alt text from a template and/or figure data in the prompt
     starter_desc = ""
-    data_md_table = ""
-    if (use_starter_alt_in_prompt and (prompt in [None, ""])) or include_table or include_table_in_prompt:
-        chart_desc = generate_alt_text(chart_type=chart_type, desc_level=desc_level,
-                                       include_table=(include_table or include_table_in_prompt), **kwargs)
-        chart_desc = chart_desc.replace("there are too many data points to fit in a table", "").strip()
-        # Extract the data table from the chart desc if possible
-        table_start = chart_desc.lower().find("data table:")
-        if table_start != -1:
-            data_md_table = chart_desc[table_start:].replace('Data table:\n\n', '')
-            chart_desc = chart_desc[:table_start]
-        # Use the heuristic in the prompt
-        if use_starter_alt_in_prompt:
-            starter_desc += chart_desc
-        # Use the data table in the prompt
-        if include_table_in_prompt and table_start != -1:
-            if data_md_table.replace("\n", "").strip() != "":
-                starter_desc += "\nThis is a table with data from the chart to describe:\n\n" + data_md_table
-            #chart_desc = chart_desc[:table_start]
-
+    if (use_starter_alt_in_prompt and (prompt in [None, ""])) or include_table_in_prompt:
+        starter_desc = generate_alt_text(chart_type=chart_type, desc_level=desc_level,
+                                         include_text=use_starter_alt_in_prompt,
+                                         include_table=include_table_in_prompt, **kwargs)
+        starter_desc.replace("Data table:", "This is a table with data from the chart to describe:")
     if prompt in [None, ""]:
         prompt = get_desc_level_prompt(desc_level, starter_desc=starter_desc, max_tokens=max_tokens, include_colors=include_colors)
-    #print(f"prompt: {prompt}")
+    # Get response from model
     api_response = get_openai_vision_response(api_key, prompt, base64_img, model=model,
                                               use_azure=use_azure, max_tokens=max_tokens,
                                               return_full_response=False)
     api_response = "This description was generated by a language model. " + api_response
-    #api_response = insert_line_breaks(api_response.strip(), max_line_width=max_alt_line_width)
-    if include_table:
-        return f"{api_response}Data table:\n\n {data_md_table}"
+    # Optionally append data table to the model's response
+    if include_table != "never":
+        table_desc = generate_alt_text(chart_type=chart_type, include_text=False,
+                                       include_table=include_table, **kwargs)
+        return f"{api_response}{table_desc}"
     return api_response
 
 
@@ -632,7 +648,7 @@ def show_with_api_alt(api_key=None, prompt=None,
         by alt text for each axis and their number. If return_alt is False, returns None.
     """
     if "table" in methods or "md_table" in methods:
-        kwargs["include_table"] = True
+        kwargs["include_table"] = "always"
     ai_alt_text = generate_api_alt_text(api_key, prompt=prompt,
                          fig=fig, desc_level=desc_level, model=model,
                          chart_type=chart_type,
