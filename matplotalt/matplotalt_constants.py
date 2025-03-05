@@ -1,4 +1,6 @@
 LINE_STYLE_TO_DESC = {
+    "none": "",
+    "None": "",
     "-": "",
     "solid": "",
     "--": "dashed ",
@@ -35,7 +37,7 @@ CHART_TYPE_TO_DESC = {
     "strip":       "A strip plot",
     "choropleth":  "A choropleth map",
     "contour":     "A contour plot",
-    "area":        "An area chart",
+    "area":        "An area chart"
 }
 
 CHART_TYPE_TO_ID = {

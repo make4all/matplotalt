@@ -1,3 +1,4 @@
+import matplotlib.patches
 import numpy as np
 from copy import deepcopy
 from scipy.stats import pearsonr
@@ -76,7 +77,14 @@ class ChartDescription():
                 if label not in self.chart_dict["var_info"]:
                     self.chart_dict["var_info"][label] = {}
                 if legend_handles and i < len(legend_handles):
-                    self.chart_dict["var_info"][label]["color"] = get_color_name(legend_handles[i].get_color())
+                    #print(legend_handles[i])
+                    #print(type(legend_handles[i]))
+                    #print(dir(legend_handles[i]))
+                    if isinstance(legend_handles[i], matplotlib.patches.Rectangle):
+                        var_color = legend_handles[i].get_facecolor()
+                    else:
+                        var_color = legend_handles[i].get_color()
+                    self.chart_dict["var_info"][label]["color"] = get_color_name(var_color)
 
 
     def parse_axes(self):
@@ -149,7 +157,7 @@ class ChartDescription():
 
 
 
-    def get_data_as_md_table(self, max_rows=20, sig_figs=4):
+    def get_data_as_md_table(self, max_rows=20, max_cols=20, sig_figs=4):
         if len(self.chart_dict["ax_info"]) > 0:
             table_dict = {}
             for ax_name, ax_dict in self.chart_dict["ax_info"].items():
@@ -165,9 +173,11 @@ class ChartDescription():
                     for var_dict in self.chart_dict["var_info"].values():
                         if "data" in var_dict and ax_name in var_dict["data"]:
                             vars_cur_ax_data.append(var_dict["data"][ax_name])
+                    if len(vars_cur_ax_data) < 1:
+                        return ""
                     data_len = len(vars_cur_ax_data[0])
                     if data_len > max_rows:
-                        return "There are too many data points to fit in a table"
+                        return f"Max data table rows exceeded. Max rows: {max_rows}, table rows: {data_len}"
                     # If all variables share the same data for an axis, just include it once
                     if all([len(vars_cur_ax_data[i]) == len(vars_cur_ax_data[j]) and \
                        np.allclose(vars_cur_ax_data[i], vars_cur_ax_data[j]) \
@@ -181,7 +191,9 @@ class ChartDescription():
                     if "ticklabels" in self.chart_dict["ax_info"][ax_name] and \
                     data_len == len(self.chart_dict["ax_info"][ax_name]["ticklabels"]):
                         table_dict[f"{ax_label} ticklabels"] = self.chart_dict["ax_info"][ax_name]["ticklabels"]
-            return create_md_table(table_dict, sig_figs=sig_figs)
+                    if len(table_dict) > max_cols:
+                        return f"Max data table columns exceeded. Max cols: {max_cols}, table cols: {len(table_dict)}"
+            return "Data table:\n\n" + create_md_table(table_dict, sig_figs=sig_figs)
         return ""
 
 
@@ -427,6 +439,8 @@ class ChartDescription():
         chart_type_desc = ""
         if self.chart_dict["chart_type"] in CHART_TYPE_TO_DESC:
             chart_type_desc = CHART_TYPE_TO_DESC[self.chart_dict["chart_type"]]
+        elif self.chart_dict["chart_type"] is None:
+            chart_type_desc = f"A blank plot"
         else:
             chart_type_desc = f"A {self.chart_dict['chart_type']}"
         if self.chart_dict["title"] != "":
@@ -823,7 +837,8 @@ class ContourDescription(ChartDescription):
 
 
     def get_data_as_md_table(self, **kwargs):
-        return f"Tables are currently unsupported for charts of type: {self.chart_type}"
+
+        return f"Tables are currently unsupported for charts of type: {self.chart_dict['chart_type']}"
 
 
     def get_encodings_desc(self, **kwargs):
@@ -1080,7 +1095,8 @@ class LineDescription(ChartDescription):
         encodings_desc = super().get_encodings_desc(max_color_desc_count=max_color_desc_count, **kwargs)
         if encodings_desc == "" and len(self.lines) == 1 and max_color_desc_count > 0:
             line = self.lines[0]
-            encodings_desc += f" The data are plotted in {LINE_STYLE_TO_DESC[line.get_linestyle()]}{get_color_name(line._color)}. "
+            line_style = "" if line.get_linestyle() is None else LINE_STYLE_TO_DESC[line.get_linestyle()]
+            encodings_desc += f" The data are plotted in {line_style}{get_color_name(line._color)}. "
         if len(self.vline_xs) == 1:
             encodings_desc += f" There is a vertical line at x={self.vline_xs[0]}. "
         elif len(self.vline_xs) > 1:
@@ -1150,8 +1166,8 @@ class PieDescription(ChartDescription):
                 self.wedge_labels = self.chart_dict["ax_info"]["y"]["ticklabels"]
 
 
-    def get_data_as_md_table(self, max_rows=20, sig_figs=4):
-        md_table_str = super().get_data_as_md_table(max_rows=max_rows, sig_figs=sig_figs)
+    def get_data_as_md_table(self, max_rows=20, max_cols=20, sig_figs=4):
+        md_table_str = super().get_data_as_md_table(max_rows=max_rows, max_cols=max_cols, sig_figs=sig_figs)
         md_table_str = md_table_str.split("\n")
         md_table_str[0] = md_table_str[0].replace("x ticklabels", "slice label").replace("x", "slice value")
         return "\n".join(md_table_str)

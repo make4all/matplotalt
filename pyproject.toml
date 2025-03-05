@@ -1,6 +1,6 @@
 [project]
 name = "matplotalt"
-version = "0.0.2"
+version = "0.0.4"
 authors = [
   {name="Kai Nylund", email="knylund@cs.washington.com"},
   {name="Venkatesh Potluri", email="vpotluri@cs.washington.edu"}
@@ -27,7 +27,6 @@ dependencies = [
   "numpy",
   "openai",
   "Pillow",
-  "pyexiv2",
   "python_dateutil",
   "scipy",
 ]
