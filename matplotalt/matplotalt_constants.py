@@ -1,3 +1,10 @@
+from enum import Enum
+
+DescLevel = Enum('DescLevel', [('L1', 1), ('L2', 2), ('L3', 3), ('L4', 4)])
+IncludeTable = Enum('IncludeTable', [('auto', 1), ('always', 2), ('never', 3)])
+ChartTypeCls = Enum('ChartTypeCls', [('auto', 1), ('model', 2)])
+SurfaceMethods = Enum('SurfaceMethods', [('html', 1), ('markdown', 2), ('new_cell', 3), ('img_file', 4), ('txt_file', 5)])
+
 LINE_STYLE_TO_DESC = {
     "none": "",
     "None": "",

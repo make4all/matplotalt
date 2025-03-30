@@ -59,8 +59,9 @@ class ChartDescription():
     def parse_title(self):
         self.chart_dict["title"] = " ".join(self.ax.get_title().replace("\n", " ").strip().split())
         # Use suptitle if there's no regular title and only one subplot
-        if self.chart_dict["title"] == "" and self.fig != None and self.fig.get_suptitle() != None and len(self.fig.get_axes()) == 1:
-            self.chart_dict["title"] = " ".join(self.fig.get_suptitle().replace("\n", " ").strip().split())
+        if self.chart_dict["title"] == "" and self.fig != None and hasattr(self.fig, "_suptitle") \
+        and self.fig._suptitle != None and len(self.fig.get_axes()) == 1:
+            self.chart_dict["title"] = " ".join(self.fig._suptitle.get_text().replace("\n", " ").strip().split())
 
 
     def parse_encodings(self, var_labels=None):

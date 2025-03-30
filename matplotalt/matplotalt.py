@@ -51,6 +51,7 @@ def infer_chart_type(ax=None):
             warnings.filterwarnings("default", category=UserWarning)
             return chart_type
         except Exception as e:
+            #print(chart_type, e)
             continue
     warnings.filterwarnings("default", category=UserWarning)
     return "unknown"
@@ -263,9 +264,9 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
     # Create alt text for all subplots + suptitle
     if isinstance(axs, (list, np.ndarray)) and len(np.array(axs).flatten()) > 1:
         flattened_axs = np.array(axs).flatten()
-        chart_title = fig.get_suptitle()
+        chart_title = fig._suptitle if hasattr(fig, "_suptitle") else None
         if chart_title is not None:
-            chart_title = " ".join(chart_title.replace("\n", " ").strip().split())
+            chart_title = " ".join(chart_title.get_text().replace("\n", " ").strip().split())
         alt_text += f"A figure with {len(flattened_axs)} subplots"
         if chart_title != None and chart_title != "":
             alt_text += f" titled \'{chart_title}\'"

@@ -1,5 +1,6 @@
 ipython
 matplotlib
+seaborn
 nbconvert
 nbformat
 numpy
@@ -7,3 +8,5 @@ openai
 Pillow
 python_dateutil
 scipy
+torch
+transformers>=4
