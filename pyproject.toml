@@ -1,6 +1,6 @@
 [project]
 name = "matplotalt"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
   {name="Kai Nylund", email="knylund@cs.washington.com"},
   {name="Venkatesh Potluri", email="vpotluri@cs.washington.edu"}
@@ -11,6 +11,7 @@ maintainers = [
 description = "A package for adding alt text to matplotlib figures in computational notebooks"
 keywords = ["alt text", "matplotlib", "Jupyter", "IPython", "seaborn", "LLMs"]
 readme = "README.md"
+license-file = "LICENSE"
 
 requires-python = ">=3.8"
 classifiers = [
@@ -22,6 +23,7 @@ classifiers = [
 dependencies = [
   "ipython",
   "matplotlib",
+  "seaborn",
   "nbconvert",
   "nbformat",
   "numpy",
@@ -29,10 +31,9 @@ dependencies = [
   "Pillow",
   "python_dateutil",
   "scipy",
+  "transformers>=4",
+  "torch"
 ]
-
-[project.optional-dependencies]
-model = ["transformers>=4"]
 
 
 [project.urls]

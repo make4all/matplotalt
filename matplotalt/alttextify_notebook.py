@@ -4,9 +4,9 @@ import argparse
 import nbformat
 from copy import deepcopy
 from nbconvert.preprocessors import ExecutePreprocessor
-import asyncio
+#import asyncio
 
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+#asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 def main():
     # Example usage: alttextify examples.ipynb -l 3 --to_html
@@ -101,6 +101,7 @@ def main():
                 cell["source"] = unmodified_source
             except Exception as e:
                 print(f"Failed to execute cell {self.cell_num}:")
+                print(e)
                 # Restore cell if execution failed
                 for cell_attr in cell.keys():
                     cell[cell_attr] = unmodified_cell[cell_attr]
