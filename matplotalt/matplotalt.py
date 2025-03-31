@@ -230,6 +230,7 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
             the chart type is not supported or the max rows/columns is exceeded.
             - "never": never include data as a markdown table.
             - "auto": Include markdown table if chart type is supported and within max rows/cols.
+
             Does not include a message if a table is not created.
 
             Defaults to "auto".
@@ -534,6 +535,7 @@ def generate_api_alt_text(api_key, prompt=None, fig=None, desc_level=4, chart_ty
             the chart type is not supported or the max rows/columns is exceeded.
             - "never": never include data as a markdown table.
             - "auto": Include markdown table if chart type is supported and within max rows/cols.
+
             Does not include a message if a table is not created.
         max_tokens (int, optional):
             The maximum number of tokens in the VLM-generated response. Defaults to 225.

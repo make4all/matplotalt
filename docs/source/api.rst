@@ -12,7 +12,7 @@ matplotalt API reference
 +-----------------------------------------+
 | :func:`matplotalt.generate_api_alt_text`|
 +-----------------------------------------+
-| :func:`matplotalt.surface_alt_text`     |
+| :func:`matplotalt.add_alt_text`         |
 +-----------------------------------------+
 | :func:`matplotalt.infer_chart_type`     |
 +-----------------------------------------+

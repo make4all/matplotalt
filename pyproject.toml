@@ -1,15 +1,15 @@
 [project]
 name = "matplotalt"
-version = "0.0.5"
+version = "0.0.6"
 authors = [
   {name="Kai Nylund", email="knylund@cs.washington.com"},
-  {name="Venkatesh Potluri", email="vpotluri@cs.washington.edu"}
+  {name="Venkatesh Potluri", email="potluriv@umich.edu"}
 ]
 maintainers = [
   {name="Kai Nylund", email="knylund@cs.washington.com"}
 ]
 description = "A package for adding alt text to matplotlib figures in computational notebooks"
-keywords = ["alt text", "matplotlib", "Jupyter", "IPython", "seaborn", "LLMs"]
+keywords = ["alt text", "matplotlib", "Jupyter", "IPython", "accessibility", "LLMs"]
 readme = "README.md"
 license-file = "LICENSE"
 
@@ -37,10 +37,10 @@ dependencies = [
 
 
 [project.urls]
-Homepage = "https://github.com/KaiNylund/matplotalt"
+Homepage = "https://github.com/make4all/matplotalt"
 Documentation = "https://matplotalt.readthedocs.io/en/latest/"
-Discussions = "https://github.com/KaiNylund/matplotalt/discussions"
-Issues = "https://github.com/KaiNylund/matplotalt/issues"
+Discussions = "https://github.com/make4all/matplotalt/discussions"
+Issues = "https://github.com/make4all/matplotalt/issues"
 
 
 [build-system]
