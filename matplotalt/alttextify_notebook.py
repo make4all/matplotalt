@@ -34,8 +34,8 @@ def main():
 
     class MatplotaltPreprocessor(ExecutePreprocessor):
         global args
-        def __init__(self, *nonkwargs, **kwargs):
-            super().__init__(*nonkwargs, **kwargs)
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             self.alt_textify_snippet = "if len(matplotlib.pyplot.gcf().get_axes()) > 0: "
             if args.api_key is None:
                 if args.desc_level is None:

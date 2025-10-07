@@ -289,6 +289,9 @@ def create_md_table(headers_to_data, sig_figs=4):
 def url_safe(s):
     return re.sub("[^a-z0-9-_]", "", s.lower().replace(" ", "_"))
 
+def format_str(s):
+    return " ".join(s.replace("\n", " ").strip().split())
+
 
 def idx_pt_desc(idxs, chart_dict, var_name, excluded_axis, sig_figs=4):
     ax_info = chart_dict["ax_info"]

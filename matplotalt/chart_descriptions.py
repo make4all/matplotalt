@@ -57,11 +57,11 @@ class ChartDescription():
 
 
     def parse_title(self):
-        self.chart_dict["title"] = " ".join(self.ax.get_title().replace("\n", " ").strip().split())
+        self.chart_dict["title"] = format_str(self.ax.get_title())
         # Use suptitle if there's no regular title and only one subplot
         if self.chart_dict["title"] == "" and self.fig != None and hasattr(self.fig, "_suptitle") \
         and self.fig._suptitle != None and len(self.fig.get_axes()) == 1:
-            self.chart_dict["title"] = " ".join(self.fig._suptitle.get_text().replace("\n", " ").strip().split())
+            self.chart_dict["title"] = format_str(self.fig._suptitle.get_text())
 
 
     def parse_encodings(self, var_labels=None):
@@ -96,8 +96,8 @@ class ChartDescription():
                 label_getter = getattr(self.ax, f"get_{ax_name}label")
                 ticklabel_getter = getattr(self.ax, f"get_{ax_name}ticklabels")
                 # Get label and ticklabels
-                ax_info_dict["label"] = label_getter()
-                ax_info_dict["ticklabels"] = [tl.get_text() for tl in ticklabel_getter()]
+                ax_info_dict["label"] = format_str(label_getter())
+                ax_info_dict["ticklabels"] = [format_str(tl.get_text()) for tl in ticklabel_getter()]
             # Try and get ax scale and range from ticklabels (e.g. linear, categorical, etc...)
             if "ticklabels" in ax_info_dict and len(ax_info_dict["ticklabels"]) > 0:
                 ax_info_dict["scale"] = get_ax_ticks_scale(ax_info_dict["ticklabels"])
@@ -117,7 +117,7 @@ class ChartDescription():
     def parse_annotations(self):
         for child in self.ax.get_children():
             if isinstance(child, matplotlib.text.Annotation):
-                self.chart_dict["annotations"].append({"text": child.get_text(), "coords": [child.xy[0], child.xy[1]]})
+                self.chart_dict["annotations"].append({"text": format_str(child.get_text()), "coords": [child.xy[0], child.xy[1]]})
 
 
     # e.g. ax_name_to_data = {"x": [[...]...,[...]], "y": [[...]...,[...]]}
@@ -630,9 +630,9 @@ class BarDescription(ChartDescription):
         self.parse_data({self.cat_axis: bar_ticks, self.num_axis: bar_values}, mark_type="point")
 
 
-    def get_encodings_desc(self, **kwargs):
+    def get_encodings_desc(self, *args, **kwargs):
         """See :func:`~ChartDescription.get_encodings_desc`"""
-        return super().get_encodings_desc(**kwargs)
+        return super().get_encodings_desc(*args, **kwargs)
 
 
     def get_stats_desc(self, stats=["numpts", "min", "max", "mean"], stat_axis=None, **kwargs):
@@ -743,19 +743,19 @@ class BoxplotDescription(ChartDescription):
         return f"Tables are currently unsupported for charts of type: {self.chart_dict['chart_type']}"
 
 
-    def get_axes_desc(self, **kwargs):
+    def get_axes_desc(self, *args, **kwargs):
         """See :func:`~ChartDescription.get_axes_desc`"""
-        return super().get_axes_desc(ax_names=["x", "y"], **kwargs)
+        return super().get_axes_desc(*args, ax_names=["x", "y"], **kwargs)
 
 
-    def get_encodings_desc(self, **kwargs):
+    def get_encodings_desc(self, *args, **kwargs):
         """See :func:`~ChartDescription.get_encodings_desc`"""
         # If we haven't initialized the label to encoding dict, populate it by mapping the legend
         # handle to its color (if possible)
         #if (len(self.label_to_encoding) == 0) and self.labels and (len(self.labels) > 0) and self.legend_handles:
         #    for i, label in enumerate(self.labels):
         #        self.label_to_encoding[label] = get_color_name(self.legend_handles[i]._facecolors[0])
-        return super().get_encodings_desc(mark_type="box", **kwargs)
+        return super().get_encodings_desc(*args, mark_type="box", **kwargs)
 
 
 
@@ -797,7 +797,7 @@ class BoxplotDescription(ChartDescription):
         return stats_desc
 
 
-    def get_trends_desc(self, **kwargs):
+    def get_trends_desc(self, *args, **kwargs):
         """TODO"""
         return ""
 
@@ -837,12 +837,12 @@ class ContourDescription(ChartDescription):
         self.parse_data({"x": [], "y": []}, mark_type="line")
 
 
-    def get_data_as_md_table(self, **kwargs):
+    def get_data_as_md_table(self, *args, **kwargs):
 
         return f"Tables are currently unsupported for charts of type: {self.chart_dict['chart_type']}"
 
 
-    def get_encodings_desc(self, **kwargs):
+    def get_encodings_desc(self, *args, **kwargs):
         """See :func:`~ChartDescription.get_encodings_desc`"""
         if len(self.level_labels) == len(self.level_values):
             cur_level_labels = [l.get_text() for l in self.level_labels]
@@ -871,7 +871,7 @@ class ContourDescription(ChartDescription):
         return stats_desc
 
 
-    def get_trends_desc(self, **kwargs):
+    def get_trends_desc(self, *args, **kwargs):
         return ""
 
 
@@ -1208,7 +1208,7 @@ class PieDescription(ChartDescription):
         return axes_desc
 
     # Easier to combine encoding and axis descriptions into a single function
-    def get_encodings_desc(self, **kwargs):
+    def get_encodings_desc(self, *args, **kwargs):
         """Returns nothing"""
         return ""
 
@@ -1366,6 +1366,6 @@ class StripDescription(ChartDescription):
         return super().get_stats_desc(stats=stats, stat_axis=stat_axis, **kwargs)
 
 
-    def get_trends_desc(self, **kwargs):
+    def get_trends_desc(self, *args, **kwargs):
         """TODO"""
         return ""

@@ -181,8 +181,8 @@ def add_alt_text(alt_text, methods=["html"], output_file=None):
 
 
 # for backwards compatability
-def surface_alt_text(**kwargs):
-    add_alt_text(**kwargs)
+def surface_alt_text(*args, **kwargs):
+    add_alt_text(*args, **kwargs)
 
 
 # TODO: Add option to output alt text as a latex command
@@ -315,7 +315,6 @@ def generate_alt_text(axs=None, fig=None, chart_type=None, desc_level=2, chart_t
 
 
 # Main function that should replace plt.show()
-# TODO: rewrite note below so behavior with plt.show is clearer
 # TODO: Add "block" param so people can pass that in if they had it in plt.show() before
 # TODO: Is there a way to alias plt.show to this function (e.g. plt.show() = show_with_alt())?
 def show_with_alt(alt_text=None, axs=None, fig=None, methods=["html"], chart_type=None,
