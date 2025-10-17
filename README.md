@@ -4,6 +4,8 @@ MatplotAlt is a Python library for generating and displaying matplotlib figure a
 
 This is an ongoing project, so let us know if you have any feedback or feature requests on our [discussion page](https://github.com/make4all/matplotalt/discussions)! To see more examples and evaluation of our methods, see our [preprint](https://arxiv.org/abs/2503.20089).
 
+**Update 10/2025**: also check out [Py maidr](https://py.maidr.ai/) for an alternative with braille and sonification options
+
 ## Installation
 
 The latest release can be installed from PyPI:
