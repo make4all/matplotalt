@@ -71,7 +71,11 @@ If you use the datasets or code provided with this work, consider citing it as b
 @article{nylund2025matplotalt,
   title={MatplotAlt: A Python Library for Adding Alt Text to Matplotlib Figures in Computational Notebooks},
   author={Nylund, Kai and Mankoff, Jennifer and Potluri, Venkatesh},
-  journal={arXiv preprint arXiv:2503.20089},
+  journal={Comput. Graph. Forum},
+  volume={44},
+  issue={3},
   year={2025}
 }
 ```
+
+This work was supported by GitHub, Microsoft, and Google. Thecontents of this article were developed under a grant from the Na-tional Institute on Disability, Independent Living, and RehabilitationResearch (NIDILRR grant number 90REGE0026-01-00) fundingthe Center for Research and Education on Accessible Technologyand Experiences (CREATE). NIDILRR is a Center within the Ad-ministration for Community Living (ACL), Department of Healthand Human Services (HHS). The contents of this article do notnecessarily represent the policy of NIDILRR, ACL, HHS, and youshould not assume endorsement by the Federal Government. Wethank members of the Make4All lab and visualization system semi-nar at the University of Washington for their valuable feedback.
