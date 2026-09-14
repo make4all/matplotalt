@@ -1,11 +1,9 @@
 import os
-import torch
-from openai import OpenAI, AzureOpenAI
-
 from matplotalt_helpers import gcf_as_pil_img
 
 def get_openai_vision_response(api_key, prompt, base64_img, model="gpt-4-vision-preview", use_azure=False,
                                max_tokens=300, return_full_response=False):
+    from openai import OpenAI, AzureOpenAI
     if use_azure:
         client = AzureOpenAI(api_key=api_key,
                              api_version=os.getenv("OPENAI_API_VERSION"),
@@ -42,6 +40,7 @@ from transformers import AutoModel, AutoTokenizer
 
 # Supports VLM and image-only models
 def get_huggingface_model_response(model, prompt="", tokenizer=None, image=None, input_ids=None, imageonly=False, **kwargs):
+    import torch
     if not imageonly: # If this is a VLM
         if input_ids is None: # And we're not given input ids
             # We need to tokenize the given prompt
